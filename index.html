@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYSTEM SELF-CHECK v1.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: "JetBrains Mono", monospace;
+      background: #000;
+      color: #00ff66;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.6s ease;
+    }
+
+    /* Scanline overlay for CRT effect */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.1) 0px,
+        rgba(0, 0, 0, 0.1) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+    }
+
+    /* Background layer for color + glitch */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Big background word */
+    #mode-word {
+      font-size: clamp(4rem, 20vw, 14rem);
+      font-weight: 700;
+      letter-spacing: 0.5rem;
+      color: rgba(255, 255, 255, 0.04);
+      text-transform: uppercase;
+      text-align: center;
+      white-space: nowrap;
+      user-select: none;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Terminal panel - landscape optimized */
+    #terminal {
+      position: relative;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 1.5rem 3rem;
+      border-radius: 8px;
+      border: 2px solid #00ff66;
+      width: 95%;
+      max-width: 1000px;
+      min-height: 280px;
+      max-height: 85vh;
+      overflow-y: auto;
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: 
+        0 0 30px rgba(0, 255, 102, 0.15),
+        0 0 60px rgba(0, 255, 102, 0.05),
+        inset 0 0 80px rgba(0, 255, 102, 0.02);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* Custom scrollbar */
+    #terminal::-webkit-scrollbar {
+      width: 8px;
+    }
+    #terminal::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    #terminal::-webkit-scrollbar-thumb {
+      background: #00ff66;
+      border-radius: 4px;
+    }
+
+    /* Blinking cursor */
+    #cursor {
+      display: inline-block;
+      width: 10px;
+      height: 18px;
+      background: #00ff66;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* STATES: background + animation */
+
+    body.state-idle {
+      background: radial-gradient(ellipse at top center, #003311 0%, #000 60%);
+    }
+
+    body.state-stop {
+      background: radial-gradient(ellipse at top center, #8b0000 0%, #190005 60%);
+    }
+
+    body.state-stop .bg-layer {
+      animation: glitch-bg 0.12s infinite;
+    }
+
+    body.state-stop #terminal {
+      border-color: #ff3333;
+      box-shadow: 
+        0 0 30px rgba(255, 51, 51, 0.5),
+        0 0 60px rgba(255, 51, 51, 0.3),
+        0 0 100px rgba(255, 0, 0, 0.2);
+      color: #ff6666;
+    }
+
+    body.state-stop #mode-word {
+      color: rgba(255, 100, 100, 0.1);
+      animation: stop-shake 0.1s infinite;
+    }
+
+    @keyframes stop-shake {
+      0%   { transform: translate(0, 0) rotate(0deg); }
+      25%  { transform: translate(-3px, 2px) rotate(-0.5deg); }
+      50%  { transform: translate(3px, -2px) rotate(0.5deg); }
+      75%  { transform: translate(-2px, -1px) rotate(-0.3deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    body.state-continue {
+      background: radial-gradient(ellipse at top center, #b68a00 0%, #241a00 60%);
+    }
+
+    body.state-continue .bg-layer {
+      animation: pulse-bg 2.5s ease-in-out infinite;
+    }
+
+    body.state-continue #terminal {
+      border-color: #ffcc00;
+      box-shadow: 
+        0 0 30px rgba(255, 204, 0, 0.35),
+        0 0 60px rgba(255, 204, 0, 0.15),
+        0 0 100px rgba(255, 204, 0, 0.08);
+      color: #ffdd55;
+      animation: warm-flicker 2s ease-in-out infinite;
+    }
+
+    @keyframes warm-flicker {
+      0%   { text-shadow: 0 0 5px #ffcc00; filter: brightness(1); }
+      25%  { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff9900; filter: brightness(1.05); }
+      50%  { text-shadow: 0 0 15px #ffcc00, 0 0 30px #ff9900; filter: brightness(1.1); }
+      75%  { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff9900; filter: brightness(1.05); }
+      100% { text-shadow: 0 0 5px #ffcc00; filter: brightness(1); }
+    }
+
+    body.state-continue #mode-word {
+      color: rgba(255, 200, 50, 0.08);
+      animation: mode-pulse 2.5s ease-in-out infinite;
+    }
+
+    body.state-start {
+      background: radial-gradient(ellipse at top center, #00ff66 0%, #00190b 60%);
+    }
+
+    body.state-start .bg-layer {
+      animation: glitch-soft 0.25s infinite, zoom-pulse 2s ease-in-out infinite;
+    }
+
+    body.state-start #terminal {
+      border-color: #00ff66;
+      box-shadow: 
+        0 0 40px rgba(0, 255, 102, 0.5),
+        0 0 80px rgba(0, 255, 102, 0.2),
+        0 0 120px rgba(0, 255, 102, 0.1);
+      color: #00ff66;
+      animation: start-glow 0.5s infinite;
+    }
+
+    @keyframes start-glow {
+      0%   { text-shadow: 0 0 5px #00ff66, 0 0 10px #00ff66; }
+      50%  { text-shadow: 0 0 15px #00ff66, 0 0 30px #00ff66, 0 0 45px #00ff66; }
+      100% { text-shadow: 0 0 5px #00ff66, 0 0 10px #00ff66; }
+    }
+
+    body.state-start #mode-word {
+      color: rgba(0, 255, 102, 0.1);
+      animation: mode-pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes mode-pulse {
+      0%   { opacity: 0.8; transform: scale(1); }
+      50%  { opacity: 1; transform: scale(1.02); }
+      100% { opacity: 0.8; transform: scale(1); }
+    }
+
+    /* Glitch keyframes */
+
+    @keyframes glitch-bg {
+      0%   { filter: hue-rotate(0deg) saturate(1); transform: translate(0, 0) scale(1) skewX(0deg); }
+      10%  { filter: hue-rotate(-15deg) saturate(1.5); transform: translate(-8px, 4px) scale(1.01) skewX(-2deg); }
+      20%  { filter: hue-rotate(10deg) saturate(0.8); transform: translate(6px, -6px) scale(0.99) skewX(1deg); }
+      30%  { filter: hue-rotate(-5deg) saturate(1.2); transform: translate(-4px, -3px) scale(1.005) skewX(-1deg); }
+      40%  { filter: hue-rotate(15deg) saturate(1.4); transform: translate(5px, 5px) scale(0.995) skewX(2deg); }
+      50%  { filter: hue-rotate(-20deg) saturate(0.9); transform: translate(-6px, 2px) scale(1.008) skewX(-1.5deg); }
+      60%  { filter: hue-rotate(8deg) saturate(1.3); transform: translate(4px, -4px) scale(0.992) skewX(1.5deg); }
+      70%  { filter: hue-rotate(-12deg) saturate(1.1); transform: translate(-3px, 6px) scale(1.003) skewX(-0.5deg); }
+      80%  { filter: hue-rotate(18deg) saturate(1.6); transform: translate(7px, -2px) scale(0.997) skewX(2.5deg); }
+      90%  { filter: hue-rotate(-8deg) saturate(0.85); transform: translate(-5px, -5px) scale(1.006) skewX(-2deg); }
+      100% { filter: hue-rotate(0deg) saturate(1); transform: translate(0, 0) scale(1) skewX(0deg); }
+    }
+
+    @keyframes glitch-soft {
+      0%   { filter: hue-rotate(0deg) brightness(1); transform: translate(0, 0) scale(1); }
+      20%  { filter: hue-rotate(5deg) brightness(1.1); transform: translate(2px, -2px) scale(1.005); }
+      40%  { filter: hue-rotate(-3deg) brightness(0.95); transform: translate(-3px, 1px) scale(0.998); }
+      60%  { filter: hue-rotate(4deg) brightness(1.05); transform: translate(1px, 3px) scale(1.002); }
+      80%  { filter: hue-rotate(-5deg) brightness(1.08); transform: translate(-2px, -1px) scale(0.997); }
+      100% { filter: hue-rotate(0deg) brightness(1); transform: translate(0, 0) scale(1); }
+    }
+
+    @keyframes pulse-bg {
+      0%   { filter: brightness(1) saturate(1); transform: scale(1); }
+      25%  { filter: brightness(1.1) saturate(1.1); transform: scale(1.005); }
+      50%  { filter: brightness(1.25) saturate(1.2); transform: scale(1.015); }
+      75%  { filter: brightness(1.1) saturate(1.1); transform: scale(1.005); }
+      100% { filter: brightness(1) saturate(1); transform: scale(1); }
+    }
+
+    @keyframes zoom-pulse {
+      0%   { transform: scale(1); filter: brightness(1); }
+      50%  { transform: scale(1.03); filter: brightness(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    /* Text flicker and glitch for stop state */
+    body.state-stop #terminal {
+      animation: text-flicker 0.08s infinite, terminal-glitch 0.3s infinite;
+    }
+
+    body.state-stop::before,
+    body.state-stop::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    body.state-stop::before {
+      background: inherit;
+      opacity: 0.8;
+      animation: rgb-split-r 0.15s infinite;
+      mix-blend-mode: screen;
+    }
+
+    body.state-stop::after {
+      background: inherit;
+      opacity: 0.8;
+      animation: rgb-split-b 0.15s infinite;
+      mix-blend-mode: screen;
+    }
+
+    @keyframes text-flicker {
+      0%   { opacity: 1; text-shadow: 0 0 2px currentColor; }
+      25%  { opacity: 0.88; text-shadow: 0 0 8px currentColor; }
+      50%  { opacity: 0.95; text-shadow: 0 0 4px currentColor; }
+      75%  { opacity: 0.85; text-shadow: 0 0 12px currentColor; }
+      100% { opacity: 1; text-shadow: 0 0 2px currentColor; }
+    }
+
+    @keyframes terminal-glitch {
+      0%   { transform: translate(0, 0) skewX(0deg); }
+      10%  { transform: translate(-2px, 1px) skewX(-0.5deg); }
+      20%  { transform: translate(2px, -1px) skewX(0.3deg); }
+      30%  { transform: translate(0, 0) skewX(0deg); }
+      40%  { transform: translate(1px, 2px) skewX(-0.2deg); }
+      50%  { transform: translate(-1px, -1px) skewX(0.4deg); }
+      60%  { transform: translate(0, 0) skewX(0deg); }
+      70%  { transform: translate(3px, 0) skewX(-0.3deg); }
+      80%  { transform: translate(-2px, 1px) skewX(0.2deg); }
+      90%  { transform: translate(1px, -2px) skewX(-0.1deg); }
+      100% { transform: translate(0, 0) skewX(0deg); }
+    }
+
+    @keyframes rgb-split-r {
+      0%   { transform: translate(0, 0); filter: hue-rotate(-60deg); }
+      25%  { transform: translate(3px, -1px); filter: hue-rotate(-50deg); }
+      50%  { transform: translate(-2px, 2px); filter: hue-rotate(-70deg); }
+      75%  { transform: translate(4px, 1px); filter: hue-rotate(-55deg); }
+      100% { transform: translate(0, 0); filter: hue-rotate(-60deg); }
+    }
+
+    @keyframes rgb-split-b {
+      0%   { transform: translate(0, 0); filter: hue-rotate(60deg); }
+      25%  { transform: translate(-3px, 1px); filter: hue-rotate(70deg); }
+      50%  { transform: translate(2px, -2px); filter: hue-rotate(50deg); }
+      75%  { transform: translate(-4px, -1px); filter: hue-rotate(65deg); }
+      100% { transform: translate(0, 0); filter: hue-rotate(60deg); }
+    }
+
+    /* Glitch line effect */
+    body.state-stop .bg-layer::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(255, 0, 0, 0.8);
+      animation: scan-line 0.1s linear infinite;
+      z-index: 2;
+    }
+
+    @keyframes scan-line {
+      0%   { top: 0%; opacity: 1; }
+      50%  { opacity: 0.5; }
+      100% { top: 100%; opacity: 1; }
+    }
+
+    /* Loading bar styling */
+    .loading-bar {
+      display: inline-block;
+      width: 300px;
+      height: 20px;
+      background: rgba(0, 255, 102, 0.1);
+      border: 1px solid #00ff66;
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .loading-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff66, #00cc55);
+      width: 0%;
+      transition: width 0.08s linear;
+      box-shadow: 0 0 10px #00ff66;
+    }
+
+    /* Glow text effect */
+    .glow {
+      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+    }
+
+    /* Landscape overlay - hidden by default */
+    .rotate-prompt {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: #000;
+      color: #00ff66;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .rotate-prompt .rotate-icon {
+      font-size: 4rem;
+      animation: rotate-hint 2s ease-in-out infinite;
+    }
+
+    .rotate-prompt p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    @keyframes rotate-hint {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-15deg); }
+      75% { transform: rotate(15deg); }
+    }
+
+    /* Show rotate prompt on portrait mobile */
+    @media (max-width: 768px) and (orientation: portrait) {
+      .rotate-prompt {
+        display: flex;
+      }
+      
+      #terminal,
+      .bg-layer,
+      .scanlines {
+        display: none;
+      }
+    }
+
+    /* Landscape mobile styles */
+    @media (max-height: 500px) and (orientation: landscape) {
+      #terminal {
+        padding: 1rem 2rem;
+        font-size: 12px;
+        min-height: auto;
+        max-height: 90vh;
+      }
+      
+      #mode-word {
+        font-size: clamp(3rem, 15vw, 8rem);
+      }
+    }
+
+    /* Tablet landscape */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      #terminal {
+        max-width: 90%;
+        font-size: 13px;
+      }
+    }
+
+    /* Desktop widescreen */
+    @media (min-width: 1200px) {
+      #terminal {
+        max-width: 1100px;
+        font-size: 15px;
+        padding: 2rem 4rem;
+      }
+    }
+
+    /* Input indicator */
+    .prompt {
+      color: #00cc55;
+    }
+
+    body.state-stop .prompt { color: #ff5555; }
+    body.state-continue .prompt { color: #ffcc00; }
+    body.state-start .prompt { color: #00ff66; }
+
+    /* Help menu grid */
+    .help-menu {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 0.5rem 2rem;
+      padding: 1.2rem 1.8rem;
+      border: 2px solid currentColor;
+      margin: 0.8rem 0;
+      background: rgba(0, 255, 102, 0.03);
+      white-space: normal;
+      font-family: "JetBrains Mono", monospace;
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.1);
+    }
+
+    .help-menu .help-title {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.1em;
+      padding-bottom: 0.8rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid currentColor;
+      letter-spacing: 0.15em;
+    }
+
+    .help-menu .cmd {
+      font-weight: 700;
+      white-space: nowrap;
+      color: inherit;
+    }
+
+    .help-menu .desc {
+      opacity: 0.75;
+      font-size: 0.95em;
+    }
+
+    body.state-stop .help-menu {
+      background: rgba(255, 51, 51, 0.05);
+      box-shadow: 0 0 15px rgba(255, 51, 51, 0.15);
+    }
+
+    body.state-continue .help-menu {
+      background: rgba(255, 204, 0, 0.05);
+      box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
+    }
+
+    body.state-start .help-menu {
+      background: rgba(0, 255, 102, 0.05);
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.15);
+    }
+  </style>
+</head>
+<body class="state-idle">
+  <!-- Rotate prompt for portrait mobile -->
+  <div class="rotate-prompt">
+    <div class="rotate-icon">📱</div>
+    <p>ROTATE DEVICE TO LANDSCAPE</p>
+    <p style="opacity: 0.5; font-size: 0.9rem;">Best experienced in widescreen</p>
+  </div>
+
+  <div class="scanlines"></div>
+  
+  <div class="bg-layer">
+    <div id="mode-word"></div>
+  </div>
+
+  <pre id="terminal"></pre>
+
+  <script>
+    const terminal = document.getElementById("terminal");
+    const modeWord = document.getElementById("mode-word");
+
+    let progress = 0;
+    let input = "";
+    let readyForInput = false;
+    let terminalContent = "";
+
+    function setState(state, word) {
+      document.body.classList.remove("state-idle", "state-stop", "state-continue", "state-start");
+      document.body.classList.add("state-" + state);
+      modeWord.textContent = word || "";
+    }
+
+    function updateTerminal() {
+      terminal.innerHTML = terminalContent + '<span id="cursor"></span>';
+      // Auto-scroll to bottom
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function print(text) {
+      terminalContent += text;
+      updateTerminal();
+    }
+
+    function println(text = "") {
+      terminalContent += text + "\n";
+      updateTerminal();
+    }
+
+    function clearTerminal() {
+      terminalContent = "";
+      updateTerminal();
+    }
+
+    // Typewriter effect for dramatic text
+    async function typeText(text, delay = 30) {
+      for (let i = 0; i < text.length; i++) {
+        terminalContent += text[i];
+        updateTerminal();
+        await sleep(delay);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function startLoading() {
+      setState("idle", "");
+      
+      // Initial boot sequence
+      await typeText("SYSTEM SELF-CHECK v1.0\n", 25);
+      await sleep(200);
+      await typeText("─────────────────────────────────────────\n", 5);
+      await sleep(300);
+      await typeText("> Initializing core systems...\n", 20);
+      await sleep(400);
+      await typeText("> Loading modules", 25);
+      
+      // Dots animation
+      for (let i = 0; i < 3; i++) {
+        await sleep(300);
+        print(".");
+      }
+      println("");
+      await sleep(200);
+      
+      println("> LOADING SYSTEM...\n");
+      
+      // Progress bar
+      const barWidth = 40;
+      
+      const loadInterval = setInterval(() => {
+        progress += Math.random() * 4 + 1;
+        if (progress > 100) progress = 100;
+        
+        const filled = Math.floor((progress / 100) * barWidth);
+        const empty = barWidth - filled;
+        const bar = "█".repeat(filled) + "░".repeat(empty);
+        const percent = Math.floor(progress).toString().padStart(3, " ");
+        
+        // Update only the progress line
+        const lines = terminalContent.split("\n");
+        const lastLineIndex = lines.length - 1;
+        lines[lastLineIndex] = `   [${bar}] ${percent}%`;
+        terminalContent = lines.join("\n");
+        updateTerminal();
+        
+        if (progress >= 100) {
+          clearInterval(loadInterval);
+          setTimeout(showReady, 600);
+        }
+      }, 60);
+      
+      println(""); // Add line for progress bar
+    }
+
+    async function showReady() {
+      println("\n");
+      await typeText("✓ All systems operational\n", 20);
+      await sleep(200);
+      await typeText("─────────────────────────────────────────\n", 5);
+      await sleep(300);
+      
+      // Big SYSTEM READY with glow effect
+      println("");
+      await typeText("   ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗\n", 3);
+      await typeText("   ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║\n", 3);
+      await typeText("   ███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║\n", 3);
+      await typeText("   ╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║\n", 3);
+      await typeText("   ███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║\n", 3);
+      await typeText("   ╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝\n", 3);
+      
+      await sleep(200);
+      
+      await typeText("   ██████╗ ███████╗ █████╗ ██████╗ ██╗   ██╗\n", 3);
+      await typeText("   ██╔══██╗██╔════╝██╔══██╗██╔══██╗╚██╗ ██╔╝\n", 3);
+      await typeText("   ██████╔╝█████╗  ███████║██║  ██║ ╚████╔╝ \n", 3);
+      await typeText("   ██╔══██╗██╔══╝  ██╔══██║██║  ██║  ╚██╔╝  \n", 3);
+      await typeText("   ██║  ██║███████╗██║  ██║██████╔╝   ██║   \n", 3);
+      await typeText("   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   \n", 3);
+      
+      println("");
+      await sleep(400);
+      await typeText('> TYPE "help" TO BEGIN\n', 30);
+      await sleep(200);
+      println("─────────────────────────────────────────");
+      print("\n> ");
+      
+      readyForInput = true;
+      input = "";
+    }
+
+    function processCommand(cmd) {
+      cmd = cmd.trim().toLowerCase();
+      
+      // Normalize commands - accept with or without parentheses
+      if (cmd === "stop" || cmd === "stop()") cmd = "stop()";
+      if (cmd === "start" || cmd === "start()") cmd = "start()";
+      if (cmd === "continue" || cmd === "continue()") cmd = "continue()";
+
+      if (cmd === "help" || cmd === "help()") {
+        println("");
+        terminalContent += `<div class="help-menu">
+<div class="help-title">AVAILABLE COMMANDS</div>
+<span class="cmd">stop</span><span class="desc">Terminate old patterns</span>
+<span class="cmd">continue</span><span class="desc">Maintain current state</span>
+<span class="cmd">start</span><span class="desc">Initialize upgrade</span>
+<span class="cmd">clear</span><span class="desc">Clear terminal</span>
+<span class="cmd">help</span><span class="desc">Show this menu</span>
+</div>`;
+        updateTerminal();
+        print("\n> ");
+        setState("idle", "");
+      } else if (cmd === "stop()") {
+        readyForInput = false; // Disable input during animation
+        println("");
+        println("▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓");
+        println("▓                                       ▓");
+        println("▓   ███████╗████████╗ ██████╗ ██████╗   ▓");
+        println("▓   ██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗  ▓");
+        println("▓   ███████╗   ██║   ██║   ██║██████╔╝  ▓");
+        println("▓   ╚════██║   ██║   ██║   ██║██╔═══╝   ▓");
+        println("▓   ███████║   ██║   ╚██████╔╝██║       ▓");
+        println("▓   ╚══════╝   ╚═╝    ╚═════╝ ╚═╝       ▓");
+        println("▓                                       ▓");
+        println("▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓");
+        println("");
+        println(">> Terminating old patterns...");
+        println(">> "); // Start progress line
+        setState("stop", "STOP");
+        
+        // Animated progress bar for stop
+        let stopProgress = 0;
+        const stopBarWidth = 36;
+        const stopInterval = setInterval(() => {
+          stopProgress += Math.random() * 6 + 3;
+          if (stopProgress > 100) stopProgress = 100;
+          
+          const filled = Math.floor((stopProgress / 100) * stopBarWidth);
+          const empty = stopBarWidth - filled;
+          const bar = "█".repeat(filled) + "░".repeat(empty);
+          const percent = Math.floor(stopProgress).toString().padStart(3, " ");
+          
+          // Update the progress line
+          const lines = terminalContent.split("\n");
+          const lastLineIndex = lines.length - 1;
+          lines[lastLineIndex] = `>> [${bar}] ${percent}%`;
+          terminalContent = lines.join("\n");
+          updateTerminal();
+          
+          if (stopProgress >= 100) {
+            clearInterval(stopInterval);
+            setTimeout(() => {
+              println("");
+              println(">> Breaking the cycle. Pattern stopped.");
+              println("─────────────────────────────────────────");
+              print("\n> ");
+              readyForInput = true; // Re-enable input
+            }, 400);
+          }
+        }, 40);
+      } else if (cmd === "continue()") {
+        readyForInput = false; // Disable input during animation
+        println("");
+        println("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░");
+        println("░                                       ░");
+        println("░    ██████╗ ██████╗ ███╗   ██╗████████╗░");
+        println("░   ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝░");
+        println("░   ██║     ██║   ██║██╔██╗ ██║   ██║   ░");
+        println("░   ██║     ██║   ██║██║╚██╗██║   ██║   ░");
+        println("░   ╚██████╗╚██████╔╝██║ ╚████║   ██║   ░");
+        println("░    ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ░");
+        println("░                                       ░");
+        println("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░");
+        println("");
+        println(">> Maintaining stable routines...");
+        println(">> "); // Start progress line
+        setState("continue", "CONTINUE");
+        
+        // Animated progress bar for continue (slower, steady pace)
+        let contProgress = 0;
+        const contBarWidth = 36;
+        const contInterval = setInterval(() => {
+          contProgress += Math.random() * 3 + 2;
+          if (contProgress > 100) contProgress = 100;
+          
+          const filled = Math.floor((contProgress / 100) * contBarWidth);
+          const empty = contBarWidth - filled;
+          const bar = "█".repeat(filled) + "░".repeat(empty);
+          const percent = Math.floor(contProgress).toString().padStart(3, " ");
+          
+          // Update the progress line
+          const lines = terminalContent.split("\n");
+          const lastLineIndex = lines.length - 1;
+          lines[lastLineIndex] = `>> [${bar}] ${percent}%`;
+          terminalContent = lines.join("\n");
+          updateTerminal();
+          
+          if (contProgress >= 100) {
+            clearInterval(contInterval);
+            setTimeout(() => {
+              println("");
+              println(">> Momentum preserved. Keep going.");
+              println("─────────────────────────────────────────");
+              print("\n> ");
+              readyForInput = true; // Re-enable input
+            }, 400);
+          }
+        }, 60);
+      } else if (cmd === "start()") {
+        readyForInput = false; // Disable input during animation
+        println("");
+        println("╔═══════════════════════════════════════╗");
+        println("║                                       ║");
+        println("║   ███████╗████████╗ █████╗ ██████╗ ████████╗");
+        println("║   ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝");
+        println("║   ███████╗   ██║   ███████║██████╔╝   ██║   ");
+        println("║   ╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ");
+        println("║   ███████║   ██║   ██║  ██║██║  ██║   ██║   ");
+        println("║   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ");
+        println("║                                       ║");
+        println("╚═══════════════════════════════════════╝");
+        println("");
+        println(">> Initializing Me_2.0...");
+        println(">> "); // Start progress line
+        setState("start", "START");
+        
+        // Animated progress bar
+        let startProgress = 0;
+        const barWidth = 36;
+        const startInterval = setInterval(() => {
+          startProgress += Math.random() * 5 + 2;
+          if (startProgress > 100) startProgress = 100;
+          
+          const filled = Math.floor((startProgress / 100) * barWidth);
+          const empty = barWidth - filled;
+          const bar = "█".repeat(filled) + "░".repeat(empty);
+          const percent = Math.floor(startProgress).toString().padStart(3, " ");
+          
+          // Update the progress line
+          const lines = terminalContent.split("\n");
+          const lastLineIndex = lines.length - 1;
+          lines[lastLineIndex] = `>> [${bar}] ${percent}%`;
+          terminalContent = lines.join("\n");
+          updateTerminal();
+          
+          if (startProgress >= 100) {
+            clearInterval(startInterval);
+            setTimeout(() => {
+              println("");
+              println(">> Upgrade complete. New chapter begins.");
+              println("─────────────────────────────────────────");
+              print("\n> ");
+              readyForInput = true; // Re-enable input
+            }, 400);
+          }
+        }, 50);
+      } else if (cmd === "clear") {
+        clearTerminal();
+        println("Terminal cleared.");
+        println("─────────────────────────────────────────");
+        print("\n> ");
+      } else if (cmd === "exit" || cmd === "exit()") {
+        println("");
+        println(">> SESSION TERMINATED");
+        println(">> Thank you for using SYSTEM SELF-CHECK");
+        println("─────────────────────────────────────────");
+        readyForInput = false;
+        setState("idle", "");
+      } else if (cmd === "") {
+        print("\n> ");
+      } else {
+        println("");
+        println(`>> Unknown command: "${cmd}"`);
+        println('>> Type "help" for available commands.');
+        println("─────────────────────────────────────────");
+        print("\n> ");
+        setState("idle", "");
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (!readyForInput) return;
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        processCommand(input);
+        input = "";
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        if (input.length > 0) {
+          input = input.slice(0, -1);
+          terminalContent = terminalContent.slice(0, -1);
+          updateTerminal();
+        }
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        input += e.key;
+        print(e.key);
+      }
+    });
+
+    // Start the experience
+    startLoading();
+  </script>
+</body>
+</html>
+
