@@ -216,6 +216,113 @@
       animation: mode-pulse 1s ease-in-out infinite;
     }
 
+    /* Background media layers */
+    .bg-media {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      pointer-events: none;
+    }
+
+    .bg-media.active {
+      opacity: 1;
+    }
+
+    .bg-media img,
+    .bg-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: brightness(0.4) saturate(0.8);
+    }
+
+    .bg-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.8) 100%);
+      pointer-events: none;
+    }
+
+    /* Green flash overlay */
+    .green-flash {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #00ff66;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .green-flash.flash {
+      animation: flashBang 0.4s ease-out forwards;
+    }
+
+    @keyframes flashBang {
+      0% { opacity: 0.9; }
+      100% { opacity: 0; }
+    }
+
+    /* Vertical scanline sweep */
+    .vertical-scanline {
+      position: fixed;
+      top: 0;
+      left: -100px;
+      width: 100px;
+      height: 100%;
+      z-index: 150;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(0, 255, 102, 0.1) 30%,
+        rgba(0, 255, 102, 0.5) 50%,
+        rgba(0, 255, 102, 0.1) 70%,
+        transparent 100%
+      );
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 0 60px rgba(0, 255, 102, 0.8);
+    }
+
+    .vertical-scanline.sweep {
+      animation: scanSweep 0.8s ease-in-out forwards;
+    }
+
+    @keyframes scanSweep {
+      0% { left: -100px; opacity: 1; }
+      100% { left: calc(100% + 100px); opacity: 1; }
+    }
+
+    /* Terminal glitch effect */
+    .terminal-glitch {
+      animation: terminalGlitchAnim 0.3s ease-out !important;
+    }
+
+    @keyframes terminalGlitchAnim {
+      0% { transform: translate(0, 0) skewX(0deg); filter: hue-rotate(0deg); }
+      10% { transform: translate(-5px, 3px) skewX(-3deg); filter: hue-rotate(90deg); }
+      20% { transform: translate(5px, -3px) skewX(3deg); filter: hue-rotate(-90deg); }
+      30% { transform: translate(-3px, -2px) skewX(-2deg); filter: hue-rotate(45deg); }
+      40% { transform: translate(3px, 2px) skewX(2deg); filter: hue-rotate(-45deg); }
+      50% { transform: translate(-2px, 1px) skewX(-1deg); filter: hue-rotate(30deg); }
+      60% { transform: translate(2px, -1px) skewX(1deg); filter: hue-rotate(-30deg); }
+      70% { transform: translate(-1px, 2px) skewX(-0.5deg); filter: hue-rotate(15deg); }
+      80% { transform: translate(1px, -2px) skewX(0.5deg); filter: hue-rotate(-15deg); }
+      90% { transform: translate(0, 1px) skewX(0deg); filter: hue-rotate(5deg); }
+      100% { transform: translate(0, 0) skewX(0deg); filter: hue-rotate(0deg); }
+    }
+
+    /* Enhanced start state with image bg */
+    body.state-start .bg-media img {
+      filter: brightness(0.35) saturate(1.2) hue-rotate(80deg);
+    }
+
+    /* Enhanced continue state with video bg */
+    body.state-continue .bg-media video {
+      filter: brightness(0.3) saturate(1.1);
+    }
+
     @keyframes mode-pulse {
       0%   { opacity: 0.8; transform: scale(1); }
       50%  { opacity: 1; transform: scale(1.02); }
@@ -517,6 +624,22 @@
 
   <div class="scanlines"></div>
   
+  <!-- Background media layers -->
+  <div class="bg-media" id="bg-image">
+    <img src="cert.png" alt="Certification Roadmap">
+  </div>
+  <div class="bg-media" id="bg-video">
+    <video id="thm-video" loop muted playsinline>
+      <source src="thm.mp4" type="video/mp4">
+    </video>
+  </div>
+  
+  <!-- Green flash overlay -->
+  <div class="green-flash" id="green-flash"></div>
+  
+  <!-- Vertical scanline -->
+  <div class="vertical-scanline" id="vertical-scanline"></div>
+  
   <div class="bg-layer">
     <div id="mode-word"></div>
   </div>
@@ -526,6 +649,11 @@
   <script>
     const terminal = document.getElementById("terminal");
     const modeWord = document.getElementById("mode-word");
+    const bgImage = document.getElementById("bg-image");
+    const bgVideo = document.getElementById("bg-video");
+    const thmVideo = document.getElementById("thm-video");
+    const greenFlash = document.getElementById("green-flash");
+    const verticalScanline = document.getElementById("vertical-scanline");
 
     let progress = 0;
     let input = "";
@@ -536,6 +664,61 @@
       document.body.classList.remove("state-idle", "state-stop", "state-continue", "state-start");
       document.body.classList.add("state-" + state);
       modeWord.textContent = word || "";
+    }
+
+    // Hide all background media
+    function hideAllBgMedia() {
+      bgImage.classList.remove("active");
+      bgVideo.classList.remove("active");
+      thmVideo.pause();
+      thmVideo.currentTime = 0;
+    }
+
+    // Show certification image background
+    function showCertBackground() {
+      hideAllBgMedia();
+      bgImage.classList.add("active");
+    }
+
+    // Show video background
+    function showVideoBackground() {
+      hideAllBgMedia();
+      bgVideo.classList.add("active");
+      thmVideo.play().catch(() => {}); // Autoplay might be blocked
+    }
+
+    // Trigger green flash effect
+    function triggerGreenFlash() {
+      greenFlash.classList.remove("flash");
+      void greenFlash.offsetWidth; // Force reflow
+      greenFlash.classList.add("flash");
+    }
+
+    // Trigger vertical scanline sweep
+    function triggerScanlineSweep() {
+      verticalScanline.classList.remove("sweep");
+      void verticalScanline.offsetWidth; // Force reflow
+      verticalScanline.classList.add("sweep");
+    }
+
+    // Trigger terminal glitch effect
+    function triggerTerminalGlitch() {
+      terminal.classList.add("terminal-glitch");
+      setTimeout(() => {
+        terminal.classList.remove("terminal-glitch");
+      }, 300);
+    }
+
+    // Full transition sequence
+    function triggerTransitionSequence(showBgCallback) {
+      triggerTerminalGlitch();
+      setTimeout(() => {
+        triggerGreenFlash();
+        showBgCallback();
+      }, 150);
+      setTimeout(() => {
+        triggerScanlineSweep();
+      }, 300);
     }
 
     function updateTerminal() {
@@ -667,12 +850,13 @@
       if (cmd === "continue" || cmd === "continue()") cmd = "continue()";
 
       if (cmd === "help" || cmd === "help()") {
+        hideAllBgMedia();
         println("");
         terminalContent += `<div class="help-menu">
 <div class="help-title">AVAILABLE COMMANDS</div>
 <span class="cmd">stop</span><span class="desc">Terminate old patterns</span>
-<span class="cmd">continue</span><span class="desc">Maintain current state</span>
-<span class="cmd">start</span><span class="desc">Initialize upgrade</span>
+<span class="cmd">continue</span><span class="desc">Load TryHackMe training</span>
+<span class="cmd">start</span><span class="desc">Show certification roadmap</span>
 <span class="cmd">clear</span><span class="desc">Clear terminal</span>
 <span class="cmd">help</span><span class="desc">Show this menu</span>
 </div>`;
@@ -680,6 +864,7 @@
         print("\n> ");
         setState("idle", "");
       } else if (cmd === "stop()") {
+        hideAllBgMedia();
         readyForInput = false; // Disable input during animation
         println("");
         println("▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓");
@@ -741,7 +926,7 @@
         println("░                                       ░");
         println("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░");
         println("");
-        println(">> Maintaining stable routines...");
+        println(">> Loading TryHackMe training environment...");
         println(">> "); // Start progress line
         setState("continue", "CONTINUE");
         
@@ -766,13 +951,17 @@
           
           if (contProgress >= 100) {
             clearInterval(contInterval);
+            // Trigger the transition sequence with video
+            triggerTransitionSequence(showVideoBackground);
             setTimeout(() => {
               println("");
-              println(">> Momentum preserved. Keep going.");
+              println(">> TryHackMe environment loaded.");
+              println(">> Hands-on practice in progress...");
+              println(">> Keep hacking. Keep learning.");
               println("─────────────────────────────────────────");
               print("\n> ");
               readyForInput = true; // Re-enable input
-            }, 400);
+            }, 800);
           }
         }, 60);
       } else if (cmd === "start()") {
@@ -789,7 +978,7 @@
         println("║                                       ║");
         println("╚═══════════════════════════════════════╝");
         println("");
-        println(">> Initializing Me_2.0...");
+        println(">> Initializing certification pathway...");
         println(">> "); // Start progress line
         setState("start", "START");
         
@@ -814,21 +1003,28 @@
           
           if (startProgress >= 100) {
             clearInterval(startInterval);
+            // Trigger the transition sequence
+            triggerTransitionSequence(showCertBackground);
             setTimeout(() => {
               println("");
-              println(">> Upgrade complete. New chapter begins.");
+              println(">> Loading certification roadmap...");
+              println(">> ITF+ → A+ → Network+ → Security+ → PenTest+/CySA+ → SecurityX");
+              println(">> Your path to mastery is clear.");
               println("─────────────────────────────────────────");
               print("\n> ");
               readyForInput = true; // Re-enable input
-            }, 400);
+            }, 800);
           }
         }, 50);
       } else if (cmd === "clear") {
+        hideAllBgMedia();
         clearTerminal();
         println("Terminal cleared.");
         println("─────────────────────────────────────────");
         print("\n> ");
+        setState("idle", "");
       } else if (cmd === "exit" || cmd === "exit()") {
+        hideAllBgMedia();
         println("");
         println(">> SESSION TERMINATED");
         println(">> Thank you for using SYSTEM SELF-CHECK");
@@ -838,6 +1034,7 @@
       } else if (cmd === "") {
         print("\n> ");
       } else {
+        hideAllBgMedia();
         println("");
         println(`>> Unknown command: "${cmd}"`);
         println('>> Type "help" for available commands.');
