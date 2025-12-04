@@ -489,9 +489,8 @@
       text-align: center;
       font-weight: 700;
       font-size: 1.1em;
-      padding-bottom: 0.8rem;
-      margin-bottom: 0.5rem;
-      border-bottom: 1px solid currentColor;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0;
       letter-spacing: 0.15em;
     }
 
@@ -790,11 +789,12 @@
         println("");
         terminalContent += `<div class="help-menu">
 <div class="help-title">AVAILABLE COMMANDS</div>
-<span class="cmd">stop</span><span class="desc">Terminate old patterns</span>
-<span class="cmd">continue</span><span class="desc">Load TryHackMe training</span>
-<span class="cmd">start</span><span class="desc">Show certification roadmap</span>
-<span class="cmd">clear</span><span class="desc">Clear terminal</span>
-<span class="cmd">help</span><span class="desc">Show this menu</span>
+<div style="grid-column: 1 / -1; border-bottom: 1px solid currentColor; margin-bottom: 0.5rem;"></div>
+<span class="cmd">stop</span><span class="desc">Kill Process</span>
+<span class="cmd">continue</span><span class="desc">Run Training</span>
+<span class="cmd">start</span><span class="desc">Load Roadmap</span>
+<span class="cmd">clear</span><span class="desc">Flush Console</span>
+<span class="cmd">help</span><span class="desc">List Commands</span>
 </div>`;
         updateTerminal();
         print("\n> ");
