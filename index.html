@@ -188,15 +188,21 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      filter: brightness(0.4) grayscale(1);
+      filter: brightness(0.7) grayscale(1);
     }
 
     .bg-media::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.8) 100%);
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
       pointer-events: none;
+    }
+
+    /* Make terminal semi-transparent when background media is active */
+    .bg-media.active ~ .bg-layer ~ #terminal,
+    body:has(.bg-media.active) #terminal {
+      background: rgba(0, 0, 0, 0.75);
     }
 
     /* Flash overlay */
@@ -267,12 +273,12 @@
 
     /* Enhanced start state with image bg */
     body.state-start .bg-media img {
-      filter: brightness(0.35) grayscale(1);
+      filter: brightness(0.6) grayscale(1);
     }
 
     /* Enhanced continue state with video bg */
     body.state-continue .bg-media video {
-      filter: brightness(0.3) grayscale(1);
+      filter: brightness(0.5) grayscale(1);
     }
 
     @keyframes mode-pulse {
