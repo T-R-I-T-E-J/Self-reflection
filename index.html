@@ -793,6 +793,7 @@
 <span class="cmd">start</span><span class="desc">Load Roadmap</span>
 <span class="cmd">continue</span><span class="desc">Run Training</span>
 <span class="cmd">stop</span><span class="desc">Kill Process</span>
+<span class="cmd">description</span><span class="desc">About This Project</span>
 <span class="cmd">clear</span><span class="desc">Flush Console</span>
 <span class="cmd">help</span><span class="desc">List Commands</span>
 </div>`;
@@ -974,6 +975,73 @@
             }, 800);
           }
         }, 50);
+      } else if (cmd === "description" || cmd === "description()") {
+        hideAllBgMedia();
+        readyForInput = false;
+        println("");
+        println("┌─────────────────────────────────────────────────────────────┐");
+        println("│  ██████╗ ██████╗  ██████╗      ██╗███████╗ ██████╗████████╗ │");
+        println("│  ██╔══██╗██╔══██╗██╔═══██╗     ██║██╔════╝██╔════╝╚══██╔══╝ │");
+        println("│  ██████╔╝██████╔╝██║   ██║     ██║█████╗  ██║        ██║    │");
+        println("│  ██╔═══╝ ██╔══██╗██║   ██║██   ██║██╔══╝  ██║        ██║    │");
+        println("│  ██║     ██║  ██║╚██████╔╝╚█████╔╝███████╗╚██████╗   ██║    │");
+        println("│  ╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚════╝ ╚══════╝ ╚═════╝   ╚═╝    │");
+        println("└─────────────────────────────────────────────────────────────┘");
+        println("");
+        setState("idle", "DESCRIPTION");
+        
+        // Display description with typewriter effect
+        (async () => {
+          await typeText(">> ABOUT THIS EXPERIENCE\n", 20);
+          await sleep(300);
+          println("─────────────────────────────────────────────────────────────");
+          println("");
+          await typeText("For this project, I designed an interactive cyber-terminal\n", 8);
+          await typeText("themed reflection experience instead of a traditional written\n", 8);
+          await typeText("presentation. My goal was to communicate my personal growth\n", 8);
+          await typeText("and learning habits from the previous semester in a way that\n", 8);
+          await typeText("feels modern, engaging, and visual-first.\n", 8);
+          println("");
+          await typeText("I chose a retro hacker-style interface because it aligns\n", 8);
+          await typeText("strongly with my field of study—CYBERSECURITY—and reflects\n", 8);
+          await typeText("the mindset of continuous learning, system upgrades, and\n", 8);
+          await typeText("process optimization.\n", 8);
+          println("");
+          println("─────────────────────────────────────────────────────────────");
+          await sleep(200);
+          await typeText(">> CORE INTERACTION\n", 20);
+          println("─────────────────────────────────────────────────────────────");
+          println("");
+          await typeText("The core interaction is built around three commands:\n", 8);
+          await typeText("  ▸ start()    - Loads certification roadmap\n", 10);
+          await typeText("  ▸ continue() - Animated TryHackMe training sequence\n", 10);
+          await typeText("  ▸ stop()     - Terminates old passive learning habits\n", 10);
+          println("");
+          await typeText("Each section uses minimal text and relies instead on:\n", 8);
+          await typeText("  ◈ Visual metaphors\n", 10);
+          await typeText("  ◈ Progress bars\n", 10);
+          await typeText("  ◈ Glitch transitions\n", 10);
+          await typeText("  ◈ Color symbolism (green=launch, yellow=progress, red=stop)\n", 10);
+          println("");
+          println("─────────────────────────────────────────────────────────────");
+          await sleep(200);
+          await typeText(">> PURPOSE\n", 20);
+          println("─────────────────────────────────────────────────────────────");
+          println("");
+          await typeText("By designing this reflection in an interactive terminal\n", 8);
+          await typeText("format, I aim to demonstrate creativity, technical thinking,\n", 8);
+          await typeText("and alignment to real cybersecurity environments.\n", 8);
+          println("");
+          await typeText("The project reflects not just what I learned, but how I will\n", 8);
+          await typeText("continue to improve—positioning my goals like a system upgrade.\n", 8);
+          println("");
+          await typeText(">> Versioning myself from past habits to a more hands-on,\n", 12);
+          await typeText(">> disciplined learner.\n", 12);
+          println("");
+          println("═════════════════════════════════════════════════════════════");
+          print("\n> ");
+          readyForInput = true;
+        })();
       } else if (cmd === "clear") {
         hideAllBgMedia();
         clearTerminal();
