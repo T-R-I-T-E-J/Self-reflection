@@ -84,10 +84,6 @@
       overflow-y: auto;
       font-size: 14px;
       line-height: 1.5;
-      box-shadow: 
-        0 0 30px rgba(0, 255, 102, 0.15),
-        0 0 60px rgba(0, 255, 102, 0.05),
-        inset 0 0 80px rgba(0, 255, 102, 0.02);
       white-space: pre-wrap;
       word-wrap: break-word;
     }
@@ -136,10 +132,6 @@
 
     body.state-stop #terminal {
       border-color: #ff3333;
-      box-shadow: 
-        0 0 30px rgba(255, 51, 51, 0.5),
-        0 0 60px rgba(255, 51, 51, 0.3),
-        0 0 100px rgba(255, 0, 0, 0.2);
       color: #ff6666;
     }
 
@@ -166,20 +158,7 @@
 
     body.state-continue #terminal {
       border-color: #ffcc00;
-      box-shadow: 
-        0 0 30px rgba(255, 204, 0, 0.35),
-        0 0 60px rgba(255, 204, 0, 0.15),
-        0 0 100px rgba(255, 204, 0, 0.08);
       color: #ffdd55;
-      animation: warm-flicker 2s ease-in-out infinite;
-    }
-
-    @keyframes warm-flicker {
-      0%   { text-shadow: 0 0 5px #ffcc00; filter: brightness(1); }
-      25%  { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff9900; filter: brightness(1.05); }
-      50%  { text-shadow: 0 0 15px #ffcc00, 0 0 30px #ff9900; filter: brightness(1.1); }
-      75%  { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff9900; filter: brightness(1.05); }
-      100% { text-shadow: 0 0 5px #ffcc00; filter: brightness(1); }
     }
 
     body.state-continue #mode-word {
@@ -197,18 +176,7 @@
 
     body.state-start #terminal {
       border-color: #00ff66;
-      box-shadow: 
-        0 0 40px rgba(0, 255, 102, 0.5),
-        0 0 80px rgba(0, 255, 102, 0.2),
-        0 0 120px rgba(0, 255, 102, 0.1);
       color: #00ff66;
-      animation: start-glow 0.5s infinite;
-    }
-
-    @keyframes start-glow {
-      0%   { text-shadow: 0 0 5px #00ff66, 0 0 10px #00ff66; }
-      50%  { text-shadow: 0 0 15px #00ff66, 0 0 30px #00ff66, 0 0 45px #00ff66; }
-      100% { text-shadow: 0 0 5px #00ff66, 0 0 10px #00ff66; }
     }
 
     body.state-start #mode-word {
@@ -282,7 +250,6 @@
       );
       opacity: 0;
       pointer-events: none;
-      box-shadow: 0 0 60px rgba(0, 255, 102, 0.8);
     }
 
     .vertical-scanline.sweep {
@@ -397,11 +364,11 @@
     }
 
     @keyframes text-flicker {
-      0%   { opacity: 1; text-shadow: 0 0 2px currentColor; }
-      25%  { opacity: 0.88; text-shadow: 0 0 8px currentColor; }
-      50%  { opacity: 0.95; text-shadow: 0 0 4px currentColor; }
-      75%  { opacity: 0.85; text-shadow: 0 0 12px currentColor; }
-      100% { opacity: 1; text-shadow: 0 0 2px currentColor; }
+      0%   { opacity: 1; }
+      25%  { opacity: 0.88; }
+      50%  { opacity: 0.95; }
+      75%  { opacity: 0.85; }
+      100% { opacity: 1; }
     }
 
     @keyframes terminal-glitch {
@@ -469,12 +436,6 @@
       background: linear-gradient(90deg, #00ff66, #00cc55);
       width: 0%;
       transition: width 0.08s linear;
-      box-shadow: 0 0 10px #00ff66;
-    }
-
-    /* Glow text effect */
-    .glow {
-      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
     }
 
     /* Landscape overlay - hidden by default */
@@ -573,7 +534,6 @@
       background: rgba(0, 255, 102, 0.03);
       white-space: normal;
       font-family: "JetBrains Mono", monospace;
-      box-shadow: 0 0 15px rgba(0, 255, 102, 0.1);
     }
 
     .help-menu .help-title {
@@ -600,17 +560,14 @@
 
     body.state-stop .help-menu {
       background: rgba(255, 51, 51, 0.05);
-      box-shadow: 0 0 15px rgba(255, 51, 51, 0.15);
     }
 
     body.state-continue .help-menu {
       background: rgba(255, 204, 0, 0.05);
-      box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
     }
 
     body.state-start .help-menu {
       background: rgba(0, 255, 102, 0.05);
-      box-shadow: 0 0 15px rgba(0, 255, 102, 0.15);
     }
   </style>
 </head>
