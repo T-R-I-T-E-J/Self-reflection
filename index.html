@@ -790,9 +790,9 @@
         terminalContent += `<div class="help-menu">
 <div class="help-title">AVAILABLE COMMANDS</div>
 <div style="grid-column: 1 / -1; border-bottom: 1px solid currentColor; margin-bottom: 0.5rem;"></div>
-<span class="cmd">stop</span><span class="desc">Kill Process</span>
-<span class="cmd">continue</span><span class="desc">Run Training</span>
 <span class="cmd">start</span><span class="desc">Load Roadmap</span>
+<span class="cmd">continue</span><span class="desc">Run Training</span>
+<span class="cmd">stop</span><span class="desc">Kill Process</span>
 <span class="cmd">clear</span><span class="desc">Flush Console</span>
 <span class="cmd">help</span><span class="desc">List Commands</span>
 </div>`;
@@ -919,18 +919,7 @@
       } else if (cmd === "start()") {
         readyForInput = false; // Disable input during animation
         println("");
-        println("╔═══════════════════════════════════════╗");
-        println("║                                       ║");
-        println("║   ███████╗████████╗ █████╗ ██████╗ ████████╗");
-        println("║   ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝");
-        println("║   ███████╗   ██║   ███████║██████╔╝   ██║   ");
-        println("║   ╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ");
-        println("║   ███████║   ██║   ██║  ██║██║  ██║   ██║   ");
-        println("║   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ");
-        println("║                                       ║");
-        println("╚═══════════════════════════════════════╝");
-        println("");
-        println(">> Initializing certification pathway...");
+        println(">> Initializing pathway...");
         println(">> "); // Start progress line
         setState("start", "START");
         
@@ -961,21 +950,11 @@
             triggerScanlineSweep();
             setTimeout(() => {
               println("");
-              // Add image inline in terminal
-              terminalContent += `<div class="terminal-image-container">
-<div class="text-content">
->> Loading certification roadmap...
-
->> ITF+ → A+ → Network+ → Security+
-   → PenTest+/CySA+ → SecurityX
-
->> Your path to mastery is clear.
-
-─────────────────────────────────────────
-</div>
-<div class="image-content">
-<img src="cert.png" alt="Certification Roadmap">
-</div>
+              println(">> Loading roadmap...");
+              println("");
+              // Add image below text
+              terminalContent += `<div style="margin: 0.5rem 0;">
+<img src="cert.png" alt="Certification Roadmap" style="max-width: 100%; height: auto; filter: grayscale(1) brightness(0.9); border: 1px solid #555; border-radius: 4px;">
 </div>`;
               updateTerminal();
               print("\n> ");
