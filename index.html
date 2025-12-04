@@ -851,6 +851,17 @@
       } else if (cmd === "continue()") {
         readyForInput = false; // Disable input during animation
         println("");
+        println("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░");
+        println("░                                       ░");
+        println("░    ██████╗ ██████╗ ███╗   ██╗████████╗░");
+        println("░   ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝░");
+        println("░   ██║     ██║   ██║██╔██╗ ██║   ██║   ░");
+        println("░   ██║     ██║   ██║██║╚██╗██║   ██║   ░");
+        println("░   ╚██████╗╚██████╔╝██║ ╚████║   ██║   ░");
+        println("░    ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ░");
+        println("░                                       ░");
+        println("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░");
+        println("");
         println(">> Loading training environment...");
         println(">> "); // Start progress line
         setState("continue", "CONTINUE");
@@ -882,13 +893,22 @@
             triggerScanlineSweep();
             setTimeout(() => {
               println("");
-              println(">> Training active");
-              println("");
-              // Add video below text
-              terminalContent += `<div style="margin: 0.5rem 0;">
-<video autoplay loop muted playsinline style="max-width: 400px; height: auto; filter: grayscale(1) brightness(0.9); border: 1px solid #555; border-radius: 4px;">
+              // Add video inline in terminal
+              terminalContent += `<div class="terminal-image-container">
+<div class="text-content">
+>> TryHackMe environment loaded.
+
+>> Hands-on practice in progress...
+
+>> Keep hacking. Keep learning.
+
+─────────────────────────────────────────
+</div>
+<div class="image-content">
+<video autoplay loop muted playsinline style="width:100%; filter: grayscale(1) brightness(0.9); border: 1px solid #555; border-radius: 4px;">
 <source src="thm.mp4" type="video/mp4">
 </video>
+</div>
 </div>`;
               updateTerminal();
               print("\n> ");
@@ -898,6 +918,17 @@
         }, 60);
       } else if (cmd === "start()") {
         readyForInput = false; // Disable input during animation
+        println("");
+        println("╔═══════════════════════════════════════╗");
+        println("║                                       ║");
+        println("║   ███████╗████████╗ █████╗ ██████╗ ████████╗");
+        println("║   ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝");
+        println("║   ███████╗   ██║   ███████║██████╔╝   ██║   ");
+        println("║   ╚════██║   ██║   ██╔══██║██╔══██╗   ██║   ");
+        println("║   ███████║   ██║   ██║  ██║██║  ██║   ██║   ");
+        println("║   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ");
+        println("║                                       ║");
+        println("╚═══════════════════════════════════════╝");
         println("");
         println(">> Initializing pathway...");
         println(">> "); // Start progress line
