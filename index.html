@@ -511,6 +511,41 @@
     body.state-start .help-menu {
       background: rgba(255, 255, 255, 0.05);
     }
+
+    /* Inline terminal image */
+    .terminal-image-container {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0;
+      align-items: flex-start;
+    }
+
+    .terminal-image-container .text-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .terminal-image-container .image-content {
+      flex: 0 0 auto;
+      max-width: 350px;
+    }
+
+    .terminal-image-container .image-content img {
+      width: 100%;
+      height: auto;
+      filter: grayscale(1) brightness(0.9);
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 800px) {
+      .terminal-image-container {
+        flex-direction: column;
+      }
+      .terminal-image-container .image-content {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body class="state-idle">
@@ -850,14 +885,30 @@
           
           if (contProgress >= 100) {
             clearInterval(contInterval);
-            // Trigger the transition sequence with video
-            triggerTransitionSequence(showVideoBackground);
+            // Trigger the glitch effect
+            triggerTerminalGlitch();
+            triggerGreenFlash();
+            triggerScanlineSweep();
             setTimeout(() => {
               println("");
-              println(">> TryHackMe environment loaded.");
-              println(">> Hands-on practice in progress...");
-              println(">> Keep hacking. Keep learning.");
-              println("─────────────────────────────────────────");
+              // Add video inline in terminal
+              terminalContent += `<div class="terminal-image-container">
+<div class="text-content">
+>> TryHackMe environment loaded.
+
+>> Hands-on practice in progress...
+
+>> Keep hacking. Keep learning.
+
+─────────────────────────────────────────
+</div>
+<div class="image-content">
+<video autoplay loop muted playsinline style="width:100%; filter: grayscale(1) brightness(0.9); border: 1px solid #555; border-radius: 4px;">
+<source src="thm.mp4" type="video/mp4">
+</video>
+</div>
+</div>`;
+              updateTerminal();
               print("\n> ");
               readyForInput = true; // Re-enable input
             }, 800);
@@ -902,14 +953,29 @@
           
           if (startProgress >= 100) {
             clearInterval(startInterval);
-            // Trigger the transition sequence
-            triggerTransitionSequence(showCertBackground);
+            // Trigger the glitch effect
+            triggerTerminalGlitch();
+            triggerGreenFlash();
+            triggerScanlineSweep();
             setTimeout(() => {
               println("");
-              println(">> Loading certification roadmap...");
-              println(">> ITF+ → A+ → Network+ → Security+ → PenTest+/CySA+ → SecurityX");
-              println(">> Your path to mastery is clear.");
-              println("─────────────────────────────────────────");
+              // Add image inline in terminal
+              terminalContent += `<div class="terminal-image-container">
+<div class="text-content">
+>> Loading certification roadmap...
+
+>> ITF+ → A+ → Network+ → Security+
+   → PenTest+/CySA+ → SecurityX
+
+>> Your path to mastery is clear.
+
+─────────────────────────────────────────
+</div>
+<div class="image-content">
+<img src="cert.png" alt="Certification Roadmap">
+</div>
+</div>`;
+              updateTerminal();
               print("\n> ");
               readyForInput = true; // Re-enable input
             }, 800);
