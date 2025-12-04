@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SYSTEM SELF-CHECK v1.0</title>
+  <title>SELF-UPGRADE SEQUENCE v1.0</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -516,7 +516,7 @@
     .terminal-image-container {
       display: flex;
       gap: 1rem;
-      margin: 0.5rem 0;
+      margin: 0.2rem 0;
       align-items: flex-start;
     }
 
@@ -695,13 +695,15 @@
       setState("idle", "");
       
       // Initial boot sequence
-      await typeText("SYSTEM SELF-CHECK v1.0\n", 25);
+      await typeText("SELF-UPGRADE SEQUENCE v1.0\n", 25);
       await sleep(200);
-      await typeText("─────────────────────────────────────────\n", 5);
+      await typeText("──────────────────────────────────────────\n", 5);
       await sleep(300);
-      await typeText("> Initializing core systems...\n", 20);
+      await typeText("> Scanning previous semester...\n", 20);
       await sleep(400);
-      await typeText("> Loading modules", 25);
+      await typeText("> Analyzing performance logs...\n", 20);
+      await sleep(400);
+      await typeText("> Optimizing behavior modules", 25);
       
       // Dots animation
       for (let i = 0; i < 3; i++) {
@@ -711,7 +713,7 @@
       println("");
       await sleep(200);
       
-      println("> LOADING SYSTEM...\n");
+      println("");
       
       // Progress bar
       const barWidth = 40;
@@ -743,12 +745,10 @@
 
     async function showReady() {
       println("\n");
-      await typeText("✓ All systems operational\n", 20);
+      await typeText("✓ Diagnostic complete\n", 20);
       await sleep(200);
-      await typeText("─────────────────────────────────────────\n", 5);
-      await sleep(300);
       
-      // Big SYSTEM READY with glow effect
+      // Big SYSTEM READY
       println("");
       await typeText("   ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗\n", 3);
       await typeText("   ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║\n", 3);
@@ -767,10 +767,10 @@
       await typeText("   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   \n", 3);
       
       println("");
+      await typeText("──────────────────────────────────────────\n", 5);
       await sleep(400);
-      await typeText('> TYPE "help" TO BEGIN\n', 30);
+      await typeText('> Type "help" to begin\n', 30);
       await sleep(200);
-      println("─────────────────────────────────────────");
       print("\n> ");
       
       readyForInput = true;
