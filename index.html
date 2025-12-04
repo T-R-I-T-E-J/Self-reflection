@@ -22,7 +22,7 @@
     body {
       font-family: "JetBrains Mono", monospace;
       background: #000;
-      color: #00ff66;
+      color: #e0e0e0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -76,7 +76,7 @@
       background: rgba(0, 0, 0, 0.9);
       padding: 1.5rem 3rem;
       border-radius: 8px;
-      border: 2px solid #00ff66;
+      border: 2px solid #888;
       width: 95%;
       max-width: 1000px;
       min-height: 280px;
@@ -96,7 +96,7 @@
       background: rgba(0, 0, 0, 0.3);
     }
     #terminal::-webkit-scrollbar-thumb {
-      background: #00ff66;
+      background: #888;
       border-radius: 4px;
     }
 
@@ -105,7 +105,7 @@
       display: inline-block;
       width: 10px;
       height: 18px;
-      background: #00ff66;
+      background: #fff;
       margin-left: 2px;
       animation: blink 1s step-end infinite;
       vertical-align: text-bottom;
@@ -119,11 +119,11 @@
     /* STATES: background + animation */
 
     body.state-idle {
-      background: radial-gradient(ellipse at top center, #003311 0%, #000 60%);
+      background: radial-gradient(ellipse at top center, #1a1a1a 0%, #000 60%);
     }
 
     body.state-stop {
-      background: radial-gradient(ellipse at top center, #003311 0%, #000 60%);
+      background: radial-gradient(ellipse at top center, #1a1a1a 0%, #000 60%);
     }
 
     body.state-stop .bg-layer {
@@ -131,7 +131,7 @@
     }
 
     body.state-stop #mode-word {
-      color: rgba(0, 255, 102, 0.1);
+      color: rgba(255, 255, 255, 0.1);
       animation: stop-shake 0.1s infinite;
     }
 
@@ -144,7 +144,7 @@
     }
 
     body.state-continue {
-      background: radial-gradient(ellipse at top center, #003311 0%, #000 60%);
+      background: radial-gradient(ellipse at top center, #1a1a1a 0%, #000 60%);
     }
 
     body.state-continue .bg-layer {
@@ -152,12 +152,12 @@
     }
 
     body.state-continue #mode-word {
-      color: rgba(0, 255, 102, 0.08);
+      color: rgba(255, 255, 255, 0.08);
       animation: mode-pulse 2.5s ease-in-out infinite;
     }
 
     body.state-start {
-      background: radial-gradient(ellipse at top center, #003311 0%, #000 60%);
+      background: radial-gradient(ellipse at top center, #1a1a1a 0%, #000 60%);
     }
 
     body.state-start .bg-layer {
@@ -165,7 +165,7 @@
     }
 
     body.state-start #mode-word {
-      color: rgba(0, 255, 102, 0.1);
+      color: rgba(255, 255, 255, 0.1);
       animation: mode-pulse 1s ease-in-out infinite;
     }
 
@@ -188,7 +188,7 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      filter: brightness(0.4) saturate(0) sepia(1) hue-rotate(70deg);
+      filter: brightness(0.4) grayscale(1);
     }
 
     .bg-media::after {
@@ -199,12 +199,12 @@
       pointer-events: none;
     }
 
-    /* Green flash overlay */
+    /* Flash overlay */
     .green-flash {
       position: fixed;
       inset: 0;
       z-index: 200;
-      background: #00ff66;
+      background: #fff;
       opacity: 0;
       pointer-events: none;
     }
@@ -228,9 +228,9 @@
       z-index: 150;
       background: linear-gradient(90deg, 
         transparent 0%, 
-        rgba(0, 255, 102, 0.1) 30%,
-        rgba(0, 255, 102, 0.5) 50%,
-        rgba(0, 255, 102, 0.1) 70%,
+        rgba(255, 255, 255, 0.1) 30%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0.1) 70%,
         transparent 100%
       );
       opacity: 0;
@@ -267,12 +267,12 @@
 
     /* Enhanced start state with image bg */
     body.state-start .bg-media img {
-      filter: brightness(0.35) saturate(0) sepia(1) hue-rotate(70deg);
+      filter: brightness(0.35) grayscale(1);
     }
 
     /* Enhanced continue state with video bg */
     body.state-continue .bg-media video {
-      filter: brightness(0.3) saturate(0) sepia(1) hue-rotate(70deg);
+      filter: brightness(0.3) grayscale(1);
     }
 
     @keyframes mode-pulse {
@@ -355,7 +355,7 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: rgba(0, 255, 102, 0.8);
+      background: rgba(255, 255, 255, 0.8);
       animation: scan-line 0.1s linear infinite;
       z-index: 2;
     }
@@ -371,15 +371,15 @@
       display: inline-block;
       width: 300px;
       height: 20px;
-      background: rgba(0, 255, 102, 0.1);
-      border: 1px solid #00ff66;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #888;
       position: relative;
       margin-top: 8px;
     }
 
     .loading-fill {
       height: 100%;
-      background: linear-gradient(90deg, #00ff66, #00cc55);
+      background: linear-gradient(90deg, #e0e0e0, #aaa);
       width: 0%;
       transition: width 0.08s linear;
     }
@@ -391,7 +391,7 @@
       inset: 0;
       z-index: 1000;
       background: #000;
-      color: #00ff66;
+      color: #e0e0e0;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -462,7 +462,7 @@
 
     /* Input indicator */
     .prompt {
-      color: #00ff66;
+      color: #e0e0e0;
     }
 
     /* Help menu grid */
@@ -473,7 +473,7 @@
       padding: 1.2rem 1.8rem;
       border: 2px solid currentColor;
       margin: 0.8rem 0;
-      background: rgba(0, 255, 102, 0.03);
+      background: rgba(255, 255, 255, 0.03);
       white-space: normal;
       font-family: "JetBrains Mono", monospace;
     }
@@ -503,7 +503,7 @@
     body.state-stop .help-menu,
     body.state-continue .help-menu,
     body.state-start .help-menu {
-      background: rgba(0, 255, 102, 0.05);
+      background: rgba(255, 255, 255, 0.05);
     }
   </style>
 </head>
